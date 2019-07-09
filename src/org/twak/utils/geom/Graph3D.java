@@ -1,6 +1,8 @@
 package org.twak.utils.geom;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.vecmath.Matrix4d;
@@ -36,11 +38,16 @@ public class Graph3D extends MultiMap<Point3d, Point3d> {
 
 	public Set<Point3d> getAllDiscrete() {
 		Set<Point3d> out = new HashSet<>();
+		List<Junction> junctions = new ArrayList<>();
 		
 		for (Point3d k : keySet()) {
+			Junction j = new Junction(k);
+			junctions.add(j);
 			out.add(k);
-			for (Point3d v : get(k)) 
+			for (Point3d v : get(k)) {
+				j.addStreet(v);
 				out.add(v);
+			}
 		}
 		
 		return out;
