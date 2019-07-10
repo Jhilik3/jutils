@@ -3,7 +3,7 @@ package org.twak.utils.geom;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3f;
 
-public class Street {
+public class Street implements Comparable<Street> {
 
     public Point3d p1, p2;
     public double angle;
@@ -23,6 +23,10 @@ public class Street {
 
     public Vector3f getVector() {
         return new Vector3f((float)(p1.x-p2.x), (float)(p1.y-p2.y), (float)(p1.z-p2.z));
+    }
+
+    public int compareTo(Street s) {
+        return (int)(this.angle - s.angle);
     }
 
     public Point3d getUnitVector() {
