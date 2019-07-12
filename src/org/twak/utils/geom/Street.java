@@ -5,10 +5,10 @@ import javax.vecmath.Vector3f;
 
 public class Street implements Comparable<Street> {
 
-    public Point3d p1, p2;
+    public Junction p1, p2;
     public double angle;
 
-    public Street(Point3d point1, Point3d point2) {
+    public Street(Junction point1, Junction point2) {
         p1 = point1;
         p2 = point2;
     }
@@ -25,14 +25,29 @@ public class Street implements Comparable<Street> {
         return new Vector3f((float)(p1.x-p2.x), (float)(p1.y-p2.y), (float)(p1.z-p2.z));
     }
 
+    // doesn't change anything
+//    public Vector3f getVector() {
+//        return new Vector3f((float)(p1.x-p2.x), (float)(p1.z-p2.z), (float)(p1.y-p2.y));
+//    }
+
     public int compareTo(Street s) {
-        return (int)(this.angle - s.angle);
+        return Double.compare(this.angle, s.angle) ;// ()int)(this.angle - s.angle);
     }
 
-    public Point3d getUnitVector() {
-        Vector3f vec = getVector();
-//        double mag = Math.sqrt(Math.pow(vec.x, 2) + Math.pow(vec.y, 2) + Math.pow(vec.z, 2));
-        float mag = vec.length();
-        return new Point3d(vec.x/mag, vec.y/mag, vec.z/mag);
+    public Junction getOther(Junction p) {
+        if (p == p1) {
+            return p2;
+        } else if (p == p2) {
+            return p1;
+        } else {
+            throw new Error("bad junction");
+        }
     }
+
+//    public Point3d getUnitVector() {
+//        Vector3f vec = getVector();
+//        double mag = Math.sqrt(Math.pow(vec.x, 2) + Math.pow(vec.y, 2) + Math.pow(vec.z, 2));
+//        float mag = vec.length();
+//        return new Point3d(vec.x/mag, vec.y/mag, vec.z/mag);
+//    }
 }

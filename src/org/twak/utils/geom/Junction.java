@@ -14,10 +14,17 @@ public class Junction extends Point3d {
         streets = new ArrayList<>();
     }
 
-    public void addStreet(Point3d p) {
+    public Street addStreet(Junction p) {
         Street s = new Street(this, p);
         streets.add(s);
+        return s;
     }
+
+    public Street addStreet(Street s) {
+        streets.add(s);
+        return s;
+    }
+
 
     public void order() {
         Street s1 = streets.get(0);
@@ -39,6 +46,7 @@ public class Junction extends Point3d {
         }
 
         Collections.sort(streets);
+        System.out.println("Streets");
         for (Street s : streets) {
             System.out.println(s.angle);
         }
@@ -53,10 +61,22 @@ public class Junction extends Point3d {
         Junction jun1 = new Junction(p1);
         Junction jun2 = new Junction(p2);
         Junction jun3 = new Junction(p3);
-        jun1.addStreet(p2);
-        jun1.addStreet(p3);
-        jun1.addStreet(p4);
-        jun1.addStreet(p5);
+        jun1.addStreet(jun2);
+        jun1.addStreet(jun3);
+        jun1.addStreet( new Junction( p4) );
+        jun1.addStreet( new Junction( p5 ) );
         jun1.order();
+    }
+
+    public boolean hasStreetTo(Junction v1) {
+        for (Street s : streets) {
+            if (s.p1 == this && s.p2 == v1)
+                return true;
+
+            if (s.p2 == this && s.p1 == v1)
+                return true;
+        }
+
+        return false;
     }
 }

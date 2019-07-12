@@ -1,9 +1,6 @@
 package org.twak.utils.geom;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
@@ -36,21 +33,48 @@ public class Graph3D extends MultiMap<Point3d, Point3d> {
 		map = n.map;
 	}
 
-	public Set<Point3d> getAllDiscrete() {
-		Set<Point3d> out = new HashSet<>();
-		List<Junction> junctions = new ArrayList<>();
-		
+	public Set<Junction> getAllDiscrete() {
+
+		Set<Junction> junctions = new HashSet<>();
+		Map<Point3d, Junction> p2j = new HashMap<>();
+
 		for (Point3d k : keySet()) {
-			Junction j = new Junction(k);
-			junctions.add(j);
-			out.add(k);
+
+			if (!p2j.containsKey(k)) {
+				Junction j = new Junction(k);
+				junctions.add(j);
+				p2j.put(k, j);
+			}
+
 			for (Point3d v : get(k)) {
-				j.addStreet(v);
-				out.add(v);
+				if (!p2j.containsKey(v)) {
+					Junction j2 = new Junction(v);
+					junctions.add(j2);
+					p2j.put(v, j2);
+				}
 			}
 		}
-		
-		return out;
+
+		for (Point3d k : keySet()) {
+			Junction k1 = p2j.get(k);
+
+			for (Point3d v : get(k)) {
+				Junction v1 = p2j.get(v);
+
+				if (!k1.hasStreetTo(v1)) {
+					Street s = new Street(k1, v1);
+					v1.addStreet(s);
+					k1.addStreet(s);
+
+				}
+			}
+		}
+
+		for (Junction j : junctions) {
+			j.order();
+		}
+
+		return junctions;
 	}
 
 }
