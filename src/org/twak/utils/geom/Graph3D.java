@@ -65,7 +65,6 @@ public class Graph3D extends MultiMap<Point3d, Point3d> {
 					Street s = new Street(k1, v1);
 					v1.addStreet(s);
 					k1.addStreet(s);
-
 				}
 			}
 		}
