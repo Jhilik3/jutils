@@ -9,11 +9,13 @@ public class Street implements Comparable<Street> {
 
     private Junction p1, p2;
     public double angle;
-    private Point3d c1, c2, c3, c4;
+    public Point3d c1, c2, c3, c4;
+    public int width;
 
     public Street(Junction point1, Junction point2) {
         p1 = point1;
         p2 = point2;
+        width = 4;
     }
 
     public Point3d getP1() {
@@ -51,17 +53,30 @@ public class Street implements Comparable<Street> {
         int indexFront = p1.streets.indexOf(this);
         if (((indexFront+1) % p1.streets.size()) < p1.streets.size()) {
             fl = p1.streets.get((indexFront+1) % p1.streets.size());
+            // change direction
+            if (fl.getP1() != this.getP1()) {
+                fl.p2 = fl.p1;
+                fl.p1 = this.p1;
+            }
             streets.add(1, fl);
 
             int frIndex = indexFront - 1;
             if (frIndex == -1) {
                 fr = p1.streets.get(frIndex + p1.streets.size());
+                if (fr.getP1() != this.getP1()) {
+                    fr.p2 = fr.p1;
+                    fr.p1 = this.p1;
+                }
                 if (fl.compareTo(fr) != 0)
                     streets.add(2, fr);
                 else
                     streets.add(2, null);
             } else if (frIndex < p1.streets.size()) {
                 fr = p1.streets.get(frIndex);
+                if (fr.getP1() != this.getP1()) {
+                    fr.p2 = fr.p1;
+                    fr.p1 = this.p1;
+                }
                 if (fl.compareTo(fr) != 0)
                     streets.add(2, fr);
                 else
@@ -75,17 +90,29 @@ public class Street implements Comparable<Street> {
         int indexBack = p2.streets.indexOf(this);
         if (((indexBack+1) % p2.streets.size()) < p2.streets.size()) {
             bl = p2.streets.get((indexBack+1) % p2.streets.size());
+            if (bl.getP2() != this.getP2()) {
+                bl.p1 = bl.p2;
+                bl.p2 = this.p2;
+            }
             streets.add(3, bl);
 
             int brIndex = indexBack - 1;
             if (brIndex == -1) {
                 br = p2.streets.get(brIndex+p2.streets.size());
+                if (br.getP2() != this.getP2()) {
+                    br.p1 = br.p2;
+                    br.p2 = this.p2;
+                }
                 if (bl.compareTo(br) != 0)
                     streets.add(4, br);
                 else
                     streets.add(4, null);
             } else if (brIndex < p2.streets.size()) {
                 br = p2.streets.get(brIndex);
+                if (br.getP2() != this.getP2()) {
+                    br.p1 = br.p2;
+                    br.p2 = this.p2;
+                }
                 if (bl.compareTo(br) != 0)
                     streets.add(4, br);
                 else
@@ -110,7 +137,7 @@ public class Street implements Comparable<Street> {
         // perpendicular vector
         Vector3f vector = new Vector3f((float)-(p2.z-p1.z), (float)(p2.y-p1.y), (float)(p2.x-p1.x));
 
-        Vector3f v = new Vector3f(vector.x*(4/vector.length()), vector.y*(4/vector.length()), vector.z*(4/vector.length()));
+        Vector3f v = new Vector3f(vector.x*(width/vector.length()), vector.y*(width/vector.length()), vector.z*(width/vector.length()));
 
         c1 = new Point3d((p1.x+v.x), (p1.y+v.y), (p1.z+v.z));
         c2 = new Point3d((p1.x-v.x), (p1.y-v.y), (p1.z-v.z));
