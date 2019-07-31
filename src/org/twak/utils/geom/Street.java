@@ -15,7 +15,7 @@ public class Street implements Comparable<Street> {
     public Street(Junction point1, Junction point2) {
         p1 = point1;
         p2 = point2;
-        width = 4;
+        width = 4; //(int)(Math.random() * 4) + 2;
     }
 
     public Point3d getP1() {
@@ -31,7 +31,7 @@ public class Street implements Comparable<Street> {
     }
 
     public int compareTo(Street s) {
-        return Double.compare(this.angle, s.angle);// (int)(this.angle - s.angle);
+        return Double.compare(this.angle, s.angle);
     }
 
     public Junction getOther(Junction p) {
@@ -46,80 +46,76 @@ public class Street implements Comparable<Street> {
 
     public List<Street> createTempStreets() {
         List<Street> streets = new ArrayList<>();
-        Street fl, fr, bl, br;
+        Street fr, fl, br, bl;
 
         streets.add(0, this);
 
         int indexFront = p1.streets.indexOf(this);
-        if (((indexFront+1) % p1.streets.size()) < p1.streets.size()) {
-            fl = p1.streets.get((indexFront+1) % p1.streets.size());
+        fr = p1.streets.get((indexFront+1) % p1.streets.size());
+
+        // don't add if it's the same as this street
+        if (indexFront != p1.streets.indexOf(fr)) {
+            // change direction
+            if (fr.getP1() != this.getP1()) {
+                fr.p2 = fr.p1;
+                fr.p1 = this.p1;
+                p1.order();
+//                Junction P1 = p1;
+//                P1.order();
+            }
+            streets.add(1, fr);
+        } else {
+            streets.add(1, null);
+        }
+
+        int flIndex = ((indexFront - 1) + p1.streets.size()) % p1.streets.size();
+        // check if the same as this street
+        if (indexFront != flIndex) {
+            fl = p1.streets.get(flIndex);
             // change direction
             if (fl.getP1() != this.getP1()) {
                 fl.p2 = fl.p1;
                 fl.p1 = this.p1;
+                p1.order();
+//                Junction P1 = p1;
+//                P1.order();
             }
-            streets.add(1, fl);
-
-            int frIndex = indexFront - 1;
-            if (frIndex == -1) {
-                fr = p1.streets.get(frIndex + p1.streets.size());
-                if (fr.getP1() != this.getP1()) {
-                    fr.p2 = fr.p1;
-                    fr.p1 = this.p1;
-                }
-                if (fl.compareTo(fr) != 0)
-                    streets.add(2, fr);
-                else
-                    streets.add(2, null);
-            } else if (frIndex < p1.streets.size()) {
-                fr = p1.streets.get(frIndex);
-                if (fr.getP1() != this.getP1()) {
-                    fr.p2 = fr.p1;
-                    fr.p1 = this.p1;
-                }
-                if (fl.compareTo(fr) != 0)
-                    streets.add(2, fr);
-                else
-                    streets.add(2, null);
-            }
+            // check if same as fr
+            if (p1.streets.indexOf(fr) != p1.streets.indexOf(fl))
+                streets.add(2, fl);
+            else
+                streets.add(2, null);
         } else {
-            streets.add(1, null);
             streets.add(2, null);
         }
 
         int indexBack = p2.streets.indexOf(this);
-        if (((indexBack+1) % p2.streets.size()) < p2.streets.size()) {
-            bl = p2.streets.get((indexBack+1) % p2.streets.size());
+        br = p2.streets.get((indexBack+1) % p2.streets.size());
+
+        if (indexBack != p2.streets.indexOf(br)) {
+            if (br.getP2() != this.getP2()) {
+                br.p1 = br.p2;
+                br.p2 = this.p2;
+                p2.order();
+            }
+            streets.add(3, br);
+        } else {
+            streets.add(3, null);
+        }
+
+        int blIndex = ((indexBack - 1) + p2.streets.size()) % p2.streets.size();
+        if (indexBack != blIndex) {
+            bl = p2.streets.get(blIndex);
             if (bl.getP2() != this.getP2()) {
                 bl.p1 = bl.p2;
                 bl.p2 = this.p2;
+                p2.order();
             }
-            streets.add(3, bl);
-
-            int brIndex = indexBack - 1;
-            if (brIndex == -1) {
-                br = p2.streets.get(brIndex+p2.streets.size());
-                if (br.getP2() != this.getP2()) {
-                    br.p1 = br.p2;
-                    br.p2 = this.p2;
-                }
-                if (bl.compareTo(br) != 0)
-                    streets.add(4, br);
-                else
-                    streets.add(4, null);
-            } else if (brIndex < p2.streets.size()) {
-                br = p2.streets.get(brIndex);
-                if (br.getP2() != this.getP2()) {
-                    br.p1 = br.p2;
-                    br.p2 = this.p2;
-                }
-                if (bl.compareTo(br) != 0)
-                    streets.add(4, br);
-                else
-                    streets.add(4, null);
-            }
+            if (p2.streets.indexOf(br) != p2.streets.indexOf(bl))
+                streets.add(4, bl);
+            else
+                streets.add(4, null);
         } else {
-            streets.add(3, null);
             streets.add(4, null);
         }
 
@@ -168,19 +164,21 @@ public class Street implements Comparable<Street> {
     }
 
     public Point3d intersect(Point3d p1, Point3d p2, Point3d p3, Point3d p4) {
-        double d = (p1.x - p2.x)*(p3.z - p4.z);
-        double d2 = (p1.z - p2.z)*(p3.x - p4.x);
         double denom = (p1.x - p2.x)*(p3.z - p4.z) - (p1.z - p2.z)*(p3.x - p4.x);
-        double x11 = p1.x*p2.z - p1.z*p2.x;
-        double x12 = p3.x-p4.x;
-        double x1 = (p1.x*p2.z - p1.z*p2.x)*(p3.x-p4.x);
-        double x2 = (p1.x-p2.x)*(p3.x*p4.z - p3.z*p4.x);
         double numx = ((p1.x*p2.z - p1.z*p2.x)*(p3.x-p4.x)) - ((p1.x-p2.x)*(p3.x*p4.z - p3.z*p4.x));
         double numy = (p1.x*p2.z - p1.z*p2.x)*(p3.z-p4.z) - (p1.z-p2.z)*(p3.x*p4.z - p3.z*p4.x);
+
 		Point3d intersection = new Point3d(numx/denom, 0, numy/denom);
 
+        Point3d fix = new Point3d((p3.x+p1.x)/2, (p3.y+p1.y)/2, (p3.z+p1.z)/2);
+		// for errors when the streets are parallel
 		if (denom == 0) {
-		    return new Point3d(0,0,0);
+		    return fix;
+        }
+
+        // if intersection is too far away
+		if (intersection.distance(fix) > 6) {
+		    return fix;
         }
 		return intersection;
     }
