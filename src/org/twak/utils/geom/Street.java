@@ -15,7 +15,7 @@ public class Street implements Comparable<Street> {
     public Street(Junction point1, Junction point2) {
         p1 = point1;
         p2 = point2;
-        width = 4; //(int)(Math.random() * 4) + 2;
+        width = 4;//(int)(Math.random() * 4) + 2;
     }
 
     public Point3d getP1() {
@@ -24,6 +24,18 @@ public class Street implements Comparable<Street> {
 
     public Point3d getP2() {
         return p2;
+    }
+
+    public Junction getJ1() {
+        return p1;
+    }
+
+    public Junction getJ2() {
+        return p2;
+    }
+
+    public double getLength() {
+        return p1.distance(p2);
     }
 
     public Vector3f getVector() {
@@ -44,24 +56,34 @@ public class Street implements Comparable<Street> {
         }
     }
 
-    public List<Street> createTempStreets() {
+    private Street findSameStartEnd (Street real, List<Street> temp) {
+        for (Street t : temp) {
+            if (t.p1.equals(real.p1) && t.p2.equals(real.p2 ))
+                return t;
+            if (t.p2.equals(real.p1) && t.p1.equals(real.p2 ))
+                return t;
+        }
+
+        return null;
+    }
+
+    public List<Street> createTempStreets(List<Street> tempP1, List<Street> tempP2) {
         List<Street> streets = new ArrayList<>();
-        Street fr, fl, br, bl;
+        Street cur, fr, fl, br, bl;
 
-        streets.add(0, this);
+        cur = this;
+        streets.add(0, cur);
 
-        int indexFront = p1.streets.indexOf(this);
-        fr = p1.streets.get((indexFront+1) % p1.streets.size());
+        int indexFront = tempP1.indexOf( findSameStartEnd(cur, tempP1) );
+        fr = tempP1.get((indexFront+1) % tempP1.size());
 
         // don't add if it's the same as this street
-        if (indexFront != p1.streets.indexOf(fr)) {
+        if (indexFront != tempP1.indexOf(fr)) {
             // change direction
-            if (fr.getP1() != this.getP1()) {
-                fr.p2 = fr.p1;
-                fr.p1 = this.p1;
-                p1.order();
-//                Junction P1 = p1;
-//                P1.order();
+            if (! fr.getP1().equals  ( cur.getP1())) {
+                fr.changeDirection();
+                Junction.order(tempP1);
+//                tempP1.order();
             }
             streets.add(1, fr);
         } else {
@@ -71,17 +93,15 @@ public class Street implements Comparable<Street> {
         int flIndex = ((indexFront - 1) + p1.streets.size()) % p1.streets.size();
         // check if the same as this street
         if (indexFront != flIndex) {
-            fl = p1.streets.get(flIndex);
+            fl = tempP1.get(flIndex);
             // change direction
-            if (fl.getP1() != this.getP1()) {
-                fl.p2 = fl.p1;
-                fl.p1 = this.p1;
-                p1.order();
-//                Junction P1 = p1;
-//                P1.order();
+            if (!fl.getP1().equals( cur.getP1())) {
+                fl.changeDirection();
+                Junction.order(tempP1);
+//                tempP1.order();
             }
             // check if same as fr
-            if (p1.streets.indexOf(fr) != p1.streets.indexOf(fl))
+            if (tempP1.indexOf(fr) != tempP1.indexOf(fl))
                 streets.add(2, fl);
             else
                 streets.add(2, null);
@@ -89,14 +109,14 @@ public class Street implements Comparable<Street> {
             streets.add(2, null);
         }
 
-        int indexBack = p2.streets.indexOf(this);
-        br = p2.streets.get((indexBack+1) % p2.streets.size());
+        int indexBack = tempP2.indexOf(findSameStartEnd(cur, tempP2));
+        br = tempP2.get((indexBack+1) % tempP2.size());
 
-        if (indexBack != p2.streets.indexOf(br)) {
-            if (br.getP2() != this.getP2()) {
-                br.p1 = br.p2;
-                br.p2 = this.p2;
-                p2.order();
+        if (indexBack != tempP2.indexOf(br)) {
+            if (!br.getP2() .equals ( cur.getP2()) ) {
+                br.changeDirection();
+
+                Junction.order(tempP2);
             }
             streets.add(3, br);
         } else {
@@ -105,13 +125,14 @@ public class Street implements Comparable<Street> {
 
         int blIndex = ((indexBack - 1) + p2.streets.size()) % p2.streets.size();
         if (indexBack != blIndex) {
-            bl = p2.streets.get(blIndex);
-            if (bl.getP2() != this.getP2()) {
-                bl.p1 = bl.p2;
-                bl.p2 = this.p2;
-                p2.order();
+            bl = tempP2.get(blIndex);
+            if (!bl.getP2().equals ( cur.getP2()) ) {
+                bl.changeDirection();
+
+                Junction.order(tempP2);
+//                tempP2.order();
             }
-            if (p2.streets.indexOf(br) != p2.streets.indexOf(bl))
+            if (tempP2.indexOf(br) != tempP2.indexOf(bl))
                 streets.add(4, bl);
             else
                 streets.add(4, null);
@@ -128,8 +149,6 @@ public class Street implements Comparable<Street> {
     }
 
     public void corners() {
-//        List<Point3d> corners = new ArrayList<>();
-
         // perpendicular vector
         Vector3f vector = new Vector3f((float)-(p2.z-p1.z), (float)(p2.y-p1.y), (float)(p2.x-p1.x));
 
@@ -139,12 +158,6 @@ public class Street implements Comparable<Street> {
         c2 = new Point3d((p1.x-v.x), (p1.y-v.y), (p1.z-v.z));
         c3 = new Point3d((p2.x+v.x), (p2.y+v.y), (p2.z+v.z));
         c4 = new Point3d((p2.x-v.x), (p2.y-v.y), (p2.z-v.z));
-//        corners.add(c1);
-//        corners.add(c2);
-//        corners.add(c3);
-//        corners.add(c4);
-//
-//        return corners;
     }
 
     public Point3d getC1() {
@@ -183,10 +196,11 @@ public class Street implements Comparable<Street> {
 		return intersection;
     }
 
-//    public Point3d getUnitVector() {
-//        Vector3f vec = getVector();
-//        double mag = Math.sqrt(Math.pow(vec.x, 2) + Math.pow(vec.y, 2) + Math.pow(vec.z, 2));
-//        float mag = vec.length();
-//        return new Point3d(vec.x/mag, vec.y/mag, vec.z/mag);
-//    }
+    public void changeDirection() {
+        Junction one = this.getJ2();
+        Junction two = this.getJ1();
+
+        this.p1 = one;
+        this.p2 = two;
+    }
 }

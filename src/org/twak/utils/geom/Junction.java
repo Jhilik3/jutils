@@ -25,8 +25,33 @@ public class Junction extends Point3d {
         return s;
     }
 
+    public List<Street> getOutwardsGoingStreets() {
+        List<Street> out = new ArrayList<>();
+        for (Street s : streets) {
+            Street newStreet = new Street(this, s.getOther(this));
+            out.add(newStreet);
+        }
+        order(out);
+
+        return out;
+    }
+
+    public List<Street> getInwardsGoingStreets() {
+        List<Street> in = new ArrayList<>();
+        for (Street s : streets) {
+            Street newStreet = new Street(s.getOther(this), this);
+            in.add(newStreet);
+        }
+        order(in);
+
+        return in;
+    }
 
     public void order() {
+        order(streets);
+    }
+
+    public static void order (List<Street> streets){
         Street s1 = streets.get(0);
         for (Street s2 : streets) {
             // cross product
@@ -51,31 +76,6 @@ public class Junction extends Point3d {
             System.out.println(s.angle);
         }
         System.out.println("");
-    }
-
-    public static void main(String[] args) {
-        Point3d p1 = new Point3d(0,0,0);
-        Point3d p2 = new Point3d(3,0,1);
-        Point3d p3 = new Point3d(2,0,-1);
-        Point3d p4 = new Point3d(2,0,2);
-        Point3d p5 = new Point3d(-2,0,1);
-        Point3d p6 = new Point3d(2,0,1);
-        Point3d p7 = new Point3d(1,0,3);
-        Point3d p8 = new Point3d(3,0,3);
-        Junction jun1 = new Junction(p1);
-        Junction jun2 = new Junction(p2);
-        Junction jun3 = new Junction(p3);
-        Street street = jun1.addStreet(jun2);
-        Street street2 = jun1.addStreet(jun3);
-        jun1.addStreet( new Junction( p4) );
-        jun1.addStreet( new Junction( p5 ) );
-        jun1.order();
-
-        Point3d i = street.intersect(p4, p6, p7, p8);
-
-//        List<Street> s = street.createTempStreets();
-//        Point3d i = street.intersect(s.get(0).getC2(), s.get(0).getC4(), s.get(1).getC1(), s.get(1).getC3());
-        System.out.println(i.toString());
     }
 
     public boolean hasStreetTo(Junction v1) {
